@@ -4,8 +4,8 @@ import java.awt.image.BufferedImage;
 
 public class GamePanel extends JPanel implements Runnable {
 
-    public static final int WIDTH = 400;
-    public static final int HEIGHT = 400;
+    public static final int WIDTH = 1600;
+    public static final int HEIGHT = 800;
 
     private Thread thread;
     private boolean running;
@@ -44,47 +44,70 @@ public class GamePanel extends JPanel implements Runnable {
         while (running) {
             startTime = System.nanoTime();
 
-            gameUpdate();
-            gameRender();
-            gameDraw();
+            tick();
+            repaint();
 
-            elapsedTimeMillis = (System.nanoTime() - startTime) / 1000000;
+            elapsedTimeMillis = (System.nanoTime() - startTime) / 1_000_000;
             waitTime = targetTime - elapsedTimeMillis;
 
+            if(waitTime < 0) {
+                waitTime = 0;
+            }
             try {
                 Thread.sleep(waitTime);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
+            //calculates the fps for the last maxFrameCount frames
             totalTime += System.nanoTime() - startTime;
             frameCount++;
             if (frameCount == maxFrameCount) {
-                averageFPS = 1000.0 / ((totalTime / frameCount) / 1000000);
+                averageFPS = 1000000000.0 * frameCount/ totalTime;
                 frameCount = 0;
                 totalTime = 0;
             }
         }
     }
 
-    public void gameUpdate() {
+    //draws the fps in the top right corner of the screen
+    private void fpsCounter(Graphics2D g) {
+        g.setFont(new Font("Arial", Font.PLAIN, 12));
+        g.setColor(Color.GREEN);
+        String fps = String.format("FPS: %.2f", averageFPS);
+        g.drawString( fps, WIDTH-((fps.length()*6)+5), 12);
     }
 
+    public void tick() {
+        drawToImage();
+    }
+
+    /*
     public void gameRender() {
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, WIDTH, HEIGHT);
     }
+    */
 
-    public void gameDraw() {
-        Graphics g2 = this.getGraphics();
-        g2.drawImage(image, WIDTH, HEIGHT, null);
-        g2.dispose();
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        //Graphics g2 = this.getGraphics();
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, WIDTH, HEIGHT);
+        g.drawImage(image, 0, 0, null);
+        g.dispose();
     }
 
     private BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
 
     public void drawToImage() {
-        Graphics g = image.createGraphics();
+        Graphics2D g = image.createGraphics();
+
+        g.clearRect(0, 0, WIDTH, HEIGHT);
+
+        fpsCounter(g);
+
         g.drawImage(image, 0, 0, null);
         g.dispose();
     }
