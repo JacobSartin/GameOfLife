@@ -50,32 +50,23 @@ public class GamePanel extends JPanel implements Runnable {
             elapsedTimeMillis = (System.nanoTime() - startTime) / 1_000_000;
             waitTime = targetTime - elapsedTimeMillis;
 
-            if(waitTime < 0) {
-                waitTime = 0;
-            }
-            try {
-                Thread.sleep(waitTime);
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (waitTime > 0) {
+                try {
+                    Thread.sleep(waitTime);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
-            //calculates the fps for the last maxFrameCount frames
+            // calculates the fps for the last maxFrameCount frames
             totalTime += System.nanoTime() - startTime;
             frameCount++;
             if (frameCount == maxFrameCount) {
-                averageFPS = 1000000000.0 * frameCount/ totalTime;
+                averageFPS = 1_000_000_000.0 * frameCount / totalTime;
                 frameCount = 0;
                 totalTime = 0;
             }
         }
-    }
-
-    //draws the fps in the top right corner of the screen
-    private void fpsCounter(Graphics2D g) {
-        g.setFont(new Font("Arial", Font.PLAIN, 12));
-        g.setColor(Color.GREEN);
-        String fps = String.format("FPS: %.2f", averageFPS);
-        g.drawString( fps, WIDTH-((fps.length()*6)+5), 12);
     }
 
     public void tick() {
@@ -83,16 +74,16 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     /*
-    public void gameRender() {
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, WIDTH, HEIGHT);
-    }
-    */
+     * public void gameRender() {
+     * g.setColor(Color.WHITE);
+     * g.fillRect(0, 0, WIDTH, HEIGHT);
+     * }
+     */
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        //Graphics g2 = this.getGraphics();
+        // Graphics g2 = this.getGraphics();
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, WIDTH, HEIGHT);
         g.drawImage(image, 0, 0, null);
@@ -111,6 +102,14 @@ public class GamePanel extends JPanel implements Runnable {
         g.drawImage(image, 0, 0, null);
         g.dispose();
     }
+
+    // draws the fps in the top right corner of the screen
+    private void fpsCounter(Graphics2D g) {
+        g.setFont(new Font("Arial", Font.PLAIN, 12));
+        g.setColor(Color.GREEN);
+        String fps = String.format("FPS: %.2f", averageFPS);
+        // draws a string with the fps in the top right corner of the screen with a 5
+        // pixel margin
+        g.drawString(fps, WIDTH - ((fps.length() * 6) + 5), 12);
+    }
 }
-
-

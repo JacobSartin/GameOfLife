@@ -16,5 +16,18 @@ public class Main {
         frame.setLocationRelativeTo(null);
 
         frame.setVisible(true);
+
+        int[][] arr = {{0,0,0,0},{0,1,1, 1},{0,1,0,0},{0,0,0,0}};
+        GameOfLife game = new GameOfLife(arr);
+        System.out.println(game);
+        System.out.println("--------------------");
+        game.tick();
+        System.out.println(game);
+        System.out.println("--------------------");
+        game.tick();
+        System.out.println(game);
+        System.out.println("--------------------");
+        game.tick();
+        System.out.println(game);
     }
 }
