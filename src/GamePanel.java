@@ -4,12 +4,19 @@ import java.awt.image.BufferedImage;
 
 public class GamePanel extends JPanel implements Runnable {
 
+    /**
+     * The width of the game window in pixels. The size of the window will be 2x this pixel count.
+     */
     public static final int WIDTH = 1600;
+    /**
+     * The height of the game window in pixels. The size of the window will be 2x this pixel count.
+     */
     public static final int HEIGHT = 800;
 
     private Thread thread;
     private boolean running;
     private double averageFPS;
+    private GameOfLife game;
 
     private Graphics2D g;
 
@@ -58,7 +65,7 @@ public class GamePanel extends JPanel implements Runnable {
                 }
             }
 
-            // calculates the fps for the last maxFrameCount frames
+            // calculates fps by counting to a maxFrameCount and then dividing by the time taken
             totalTime += System.nanoTime() - startTime;
             frameCount++;
             if (frameCount == maxFrameCount) {
