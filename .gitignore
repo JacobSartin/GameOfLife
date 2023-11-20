@@ -1,0 +1,6 @@
+# Ignore folders that start with "."
+.*/*
+
+# Ignore output folders
+out
+lib

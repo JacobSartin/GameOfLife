@@ -7,10 +7,11 @@
 public class GameOfLife {
     private boolean[][] grid;
 
-    // randomly populate the grid
+    public GameOfLife() {
+    }
+
     public GameOfLife(int width, int height) {
         grid = new boolean[width][height];
-        populate();
     }
 
     // use this constructor to create a custom starting grid 
@@ -35,13 +36,32 @@ public class GameOfLife {
         return grid;
     }
 
-    private void populate() {
+    public boolean getCell(int x, int y) {
+        return grid[x][y];
+    }
+
+    //set the grid to a new grid
+    public void setGrid(boolean[][] grid) {
+        this.grid = grid;
+    }
+
+    //toggle a cell at x, y
+    public void toggle(int x, int y) {
+        // make sure the cell is in bounds
+        if(x >= 0 && x < grid.length && y >= 0 && y < grid[0].length) {grid[x][y] = !grid[x][y];}
+    }
+
+    public void populate() {
         for (int x = 0; x < grid.length; x++) {
             for (int y = 0; y < grid[0].length; y++) {
                 if (Math.random() < 0.1)
                     grid[x][y] = true;
             }
         }
+    }
+
+    public void clear() {
+        grid = new boolean[grid.length][grid[0].length];
     }
 
     public void tick() {
