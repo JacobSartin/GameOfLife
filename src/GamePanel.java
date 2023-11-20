@@ -1,5 +1,7 @@
 import javax.swing.*;
 
+import org.junit.Ignore;
+
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -26,7 +28,7 @@ public class GamePanel extends JPanel implements Runnable {
      * The size of a cell in pixels. The game board will be a grid of cells, each
      * with a size of CELL_SIZE x CELL_SIZE pixels.
      */
-    public static final int CELL_SIZE = 20;
+    public static final int CELL_SIZE = 25;
 
     /**
      * The width of the controls panel in pixels. The controls panel will be a
@@ -50,14 +52,13 @@ public class GamePanel extends JPanel implements Runnable {
 
     private Graphics2D g;
 
-    public GamePanel(GameOfLife game) {
+    public GamePanel() {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
         setFocusable(true);
         requestFocus();
 
-        this.game = game;
-        gameBoard = new boolean[gridColumns][gridRows];
-        game.setGrid(gameBoard);
+        // Create a GameOfLife object to manage the game state
+        game = createGameOfLife();
 
         // Add a key listener to the panel to allow the user to iterate the game using
         // the space bar
@@ -106,6 +107,12 @@ public class GamePanel extends JPanel implements Runnable {
                 }
             }
         });
+    }
+
+    // Override this method to create a custom GameOfLife object for testing or
+    // other purposes
+    protected GameOfLife createGameOfLife() {
+        return new GameOfLife(gridColumns, gridRows);
     }
 
     public void addNotify() {
@@ -160,10 +167,10 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void tick() {
-        drawToImage();
+        repaint();
     }
 
-    public void paintComponent(Graphics g) {
+    /*public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
         // Graphics g2 = this.getGraphics();
@@ -171,12 +178,29 @@ public class GamePanel extends JPanel implements Runnable {
         g.fillRect(0, 0, WIDTH, HEIGHT);
         g.drawImage(image, 0, 0, null);
         g.dispose();
+    } */
+
+    @Override
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        // Create an off-screen image to draw on
+        Image offScreenImage = createImage(getWidth(), getHeight());
+        Graphics offScreenGraphics = offScreenImage.getGraphics();
+
+        drawToImage(offScreenGraphics);
+        // Draw on the off-screen image
+        // ...
+
+        // Draw the off-screen image to the screen
+        g.drawImage(offScreenImage, 0, 0, this);
+
+        // Dispose of the off-screen graphics object
+        offScreenGraphics.dispose();
     }
 
-    private BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB); // game board
-
-    public void drawToImage() {
-        Graphics2D g = image.createGraphics();
+    public void drawToImage(Graphics offScreenGraphics) {
+        Graphics g = offScreenGraphics;
         gameBoard = game.getGrid();
 
         g.setColor(Color.BLACK);
@@ -197,13 +221,10 @@ public class GamePanel extends JPanel implements Runnable {
         }
 
         fpsCounter(g);
-
-        g.drawImage(image, 0, 0, null);
-        g.dispose();
     }
 
     // draws the fps in the top right corner of the screen
-    private void fpsCounter(Graphics2D g) {
+    private void fpsCounter(Graphics g) {
         g.setFont(new Font("Arial", Font.PLAIN, 12));
         g.setColor(Color.GREEN);
         String fps = String.format("FPS: %.2f", averageFPS);
