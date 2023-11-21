@@ -1,15 +1,11 @@
 import javax.swing.*;
 
-import org.junit.Ignore;
-
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.awt.image.BufferedImage;
-import java.util.LinkedList;
 
 public class GamePanel extends JPanel implements Runnable {
 
@@ -36,11 +32,17 @@ public class GamePanel extends JPanel implements Runnable {
      */
     public static final int CONTROLS_HEIGHT = 40;
 
+    /**
+     * The number of times per second to update the game state when unpaused.
+     */
+    public static final int UPDATE_RATE = 30;
+
     // The number of columns in the game grid
     private int gridColumns = WIDTH / CELL_SIZE;
     // The number of rows in the game grid
     private int gridRows = (HEIGHT - CONTROLS_HEIGHT) / CELL_SIZE;
     private int borderWidth = Math.max(1, CELL_SIZE / 10);
+    private boolean isPaused = false;
 
     private Thread thread;
     private boolean running;
@@ -49,8 +51,6 @@ public class GamePanel extends JPanel implements Runnable {
     private boolean[][] gameBoard;
     private boolean toggleType;
     private Point lastToggledCell;
-
-    private Graphics2D g;
 
     public GamePanel() {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
@@ -74,6 +74,9 @@ public class GamePanel extends JPanel implements Runnable {
                         break;
                     case KeyEvent.VK_C:
                         game.clear();
+                        break;
+                    case KeyEvent.VK_P:
+                        isPaused = !isPaused;
                         break;
                 }
             }
@@ -125,7 +128,6 @@ public class GamePanel extends JPanel implements Runnable {
 
     public void run() {
         running = true;
-        g = (Graphics2D) getGraphics();
 
         long startTime;
         long elapsedTimeMillis;
@@ -137,10 +139,17 @@ public class GamePanel extends JPanel implements Runnable {
 
         long targetTime = 1000 / maxFrameCount;
 
+        int count = 0;
+
         while (running) {
             startTime = System.nanoTime();
 
-            tick();
+            if (count == 0) {
+                count++;
+            } else {
+                tick();
+                count = 0;
+            }
             repaint();
 
             elapsedTimeMillis = (System.nanoTime() - startTime) / 1_000_000;
@@ -167,18 +176,10 @@ public class GamePanel extends JPanel implements Runnable {
     }
 
     public void tick() {
-        repaint();
+        if (!isPaused) {
+            game.tick();
+        }
     }
-
-    /*public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        // Graphics g2 = this.getGraphics();
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, WIDTH, HEIGHT);
-        g.drawImage(image, 0, 0, null);
-        g.dispose();
-    } */
 
     @Override
     public void paintComponent(Graphics g) {
@@ -215,7 +216,8 @@ public class GamePanel extends JPanel implements Runnable {
                     // fill the cell, leaving borderWidth pixel for the border
                     g.setColor(Color.WHITE); // dead cells are yellow
                 }
-                g.fillRect(x * CELL_SIZE + borderWidth, y * CELL_SIZE + borderWidth, CELL_SIZE - (borderWidth * 2),
+                g.fillRect(Math.round(x * CELL_SIZE) + borderWidth, Math.round(y * CELL_SIZE) + borderWidth,
+                        CELL_SIZE - (borderWidth * 2),
                         CELL_SIZE - (borderWidth * 2));
             }
         }
